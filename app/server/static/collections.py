@@ -1,6 +1,6 @@
 class Collections:
     USERS = 'users'
-    PASSPORT = 'passport'
+    PASSWORD = 'password'
     TEMP_PASSPORT = 'temp_passport'
     ACCESS_TOKENS = 'access_tokens'
     RATE_LIMITS = 'rate_limits'
@@ -9,3 +9,4 @@ class Collections:
     DEVICE_TOKENS = 'device_tokens'
     MULTIPART_UPLOAD = 'multipart_upload'
     MULTIPART_ETAGS = 'multipart_etags'
+    OTP = 'otp'

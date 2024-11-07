@@ -15,9 +15,15 @@ def generate_random_password(length):
     return ''.join(secrets.choice(characters) for _ in range(length))
 
 
+def generate_random_otp(length):
+    characters = string.digits
+
+    return ''.join(secrets.choice(characters) for _ in range(length))
+
+
 def check_password(password: Optional[str], password_hash: Optional[str]):
-    password_received = password
-    password_received = crypto_utils.sha256(password_received)
+    password = crypto_utils.sha1(password)
+    password_received = crypto_utils.sha256(password)
     if password_received != password_hash:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_PASSWORD_INVALID)
     return True

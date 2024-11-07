@@ -10,7 +10,9 @@ from sendgrid.helpers.mail import Attachment, Content, Disposition, FileContent,
 from app.server.config import config
 from app.server.logger.custom_logger import logger
 from app.server.models.custom_types import EmailStr
-from app.server.vendor.client import email_client
+
+# from app.server.vendor.client import email_client
+from app.server.vendor.twilio.client import email_client
 
 email_logger = logger.bind(vendor='Twilio-EMAIL')
 

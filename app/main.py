@@ -21,7 +21,9 @@ from app.server.logger.custom_logger import logger
 from app.server.middlewares.exceptions import ExceptionHandlerMiddleware
 from app.server.middlewares.request_gzip import GzipRoute
 from app.server.middlewares.tracker import RequestsTrackerMiddleware
-from app.server.routes.auth_manager import router as AUTH_MANAGER
+
+# from app.server.routes.auth_manager import router as AUTH_MANAGER
+from app.server.routes.student import router as STUDENT
 from app.server.utils import date_utils, mongo_utils
 from app.server.utils.token_util import authorize_docs
 
@@ -39,7 +41,8 @@ GZIP_REQUEST_ROUTE = APIRouter(route_class=GzipRoute)
 
 # add routes
 app.include_router(GZIP_REQUEST_ROUTE)
-app.include_router(AUTH_MANAGER, tags=['AUTH'], prefix='/api/v1')
+# app.include_router(AUTH_MANAGER, tags=['AUTH'], prefix='/api/v1')
+app.include_router(STUDENT, tags=['STUDENT'], prefix='/api/v1')
 
 # add exception handlers
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -84,6 +87,7 @@ async def startup_event():
     # for i in range(300,302):
     #     await producer.send('kafka_test', {'upload_id': i})
     await mongo_utils.create_indexes()
+    # await send_email(recipients=['shekharrana0145@gmail.com'], subject='DEV_TEST', body='HELLO')
 
 
 @app.on_event('shutdown')

@@ -8,9 +8,8 @@ class TokenType(str, Enum):
 
 
 class Role(str, Enum):
-    SUPER_ADMIN = 'SUPER_ADMIN'
-    TALENT = 'TALENT'
-    CLIENT = 'CLIENT'
+    ADMIN = 'ADMIN'
+    STUDENT = 'STUDENT'
 
 
 class AccountType(str, Enum):
@@ -18,6 +17,11 @@ class AccountType(str, Enum):
     ORGANIZATION = 'ORGANIZATION'
 
 
-class AccountStatus(str, Enum):
+class UserStatus(str, Enum):
     ACTIVE = 'ACTIVE'
     INACTIVE = 'INACTIVE'
+
+
+class VerificationType(str, Enum):
+    AUTHENTICATION = 'AUTHENTICATION'
+    FORGOT_PASSWORD = 'FORGOT_PASSWORD'
