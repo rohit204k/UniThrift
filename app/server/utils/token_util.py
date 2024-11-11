@@ -1,3 +1,4 @@
+import asyncio
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -9,8 +10,7 @@ from jose import jwt
 
 import app.server.database.core_data as core_service
 from app.server.config import config
-from app.server.handler.error_handler import CustomHTTPException, PermissionCustomHTTPException
-from app.server.http_client.http_client import auth_client
+from app.server.handler.error_handler import CustomHTTPException
 from app.server.static import error_identifier, localization
 from app.server.static.collections import Collections
 from app.server.static.enums import TokenType
@@ -99,7 +99,7 @@ class JWTAuthUser:
     # Using HTTP Bearer token security schema
     security = HTTPBearer()
 
-    def __init__(self, permissions=list[str], token_type: TokenType = TokenType.BEARER):
+    def __init__(self, access_levels=list[str], token_type: TokenType = TokenType.BEARER):
         """
         The JWTAuthUser constructor.
 
@@ -107,7 +107,7 @@ class JWTAuthUser:
             access_levels (list): List of access levels required by the user.
             token_type (TokenType): Expected token type (defaults to TokenType.BEARER).
         """
-        self.permissions = permissions
+        self.access_levels = access_levels
         self.token_type = token_type
 
     async def __call__(self, credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -130,30 +130,28 @@ class JWTAuthUser:
         token = credentials.credentials
 
         # Verify the JWT token
-        # token_data = verify_jwt_token(token.strip())
+        token_data = verify_jwt_token(token.strip())
 
-        # # Check if the token type matches the expected token type
-        # if token_data['token_type'] != self.token_type:
-        #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_TOKEN_INVALID)
+        # Check if the token type matches the expected token type
+        if token_data['token_type'] != self.token_type:
+            raise CustomHTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_TOKEN_INVALID, identifier=error_identifier.INVALID_TOKEN)
+
+        # Verify the user
+        existing_user = await get_current_user(token_data, token)
+
+        # Check if the user exists
+        if not existing_user:
+            raise CustomHTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_TOKEN_INVALID, identifier=error_identifier.INVALID_TOKEN)
+
+        # Check if the user's account is active
+        # if existing_user['account_status'] != AccountStatus.ACTIVE:
+        #     raise CustomHTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_ACCOUNT_INACTIVE, identifier=error_identifier.USER_INACTIVE)
 
         # Check if the user has the required access level
-        user_data = await auth_client.get('/auth/user', headers={'Authorization': f'Bearer {token}'})
-        if 'errorData' in user_data:
-            error_data = user_data.get('errorData')
-            raise CustomHTTPException(
-                status_code=error_data.get('errorCode', status.HTTP_500_INTERNAL_SERVER_ERROR),
-                detail=error_data.get('message', localization.EXCEPTION_UNKNOWN_ERROR),
-                identifier=error_data.get('identifier', error_identifier.UNKNOWN_ERROR),
-            )
+        if token_data['user_type'] not in self.access_levels:
+            raise CustomHTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=localization.EXCEPTION_FORBIDDEN_ACCESS, identifier=error_identifier.FORBIDDEN_ACCESS)
 
-        user_data = user_data['data']
-        # uncomment this later
-        for access in self.permissions:
-            if access not in user_data['permissions']:
-                missing_permission = list(set(self.permissions) - set(user_data['permissions']))
-                raise PermissionCustomHTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=localization.EXCEPTION_FORBIDDEN_ACCESS, identifier=error_identifier.ROLE_PERMISSION_MISSING, missing_permissions=missing_permission
-                )
-        del user_data['permissions']
+        # Update the last active time for the user
+        asyncio.create_task(update_last_active(token_data['user_id']))
 
-        return user_data
+        return token_data

@@ -4,7 +4,7 @@ from pydantic import constr
 
 from app.server.models.custom_types import EmailStr
 from app.server.models.generic import BaseModel
-from app.server.static.enums import Role, UserStatus
+from app.server.static.enums import Role
 
 
 class UserCreateRequest(BaseModel):
@@ -18,7 +18,6 @@ class UserCreateRequest(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    email: EmailStr
     first_name: Optional[constr(min_length=1, max_length=150, strip_whitespace=True)]
     last_name: Optional[constr(min_length=1, max_length=150, strip_whitespace=True)]
     phone: Optional[constr(min_length=1, max_length=30, strip_whitespace=True)]
@@ -33,7 +32,6 @@ class UserCreateDB(BaseModel):
     phone: str
     address: Optional[str] = ''
     user_type: Role
-    user_status: UserStatus = UserStatus.ACTIVE
     is_verified: bool = False
 
 
@@ -43,5 +41,4 @@ class UserUpdateDB(BaseModel):
     email: Optional[str]
     phone: Optional[str]
     address: Optional[str]
-    user_status: Optional[UserStatus]
     is_verified: Optional[bool]

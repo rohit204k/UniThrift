@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 
 from app.server.models.auth import EmailLoginRequest, OtpRequest, VerifyOtpRequest
 from app.server.models.users import UserCreateRequest, UserUpdateRequest
@@ -35,8 +35,8 @@ async def verify_otp(params: VerifyOtpRequest) -> dict[str, Any]:
 
 
 @router.post('/refresh', summary='Creates new access token for session maintenance')
-# async def refresh_access_token(refresh_token: str = Body(..., embed=True)) -> dict[str, Any]:
-async def refresh_access_token(refresh_token: str) -> dict[str, Any]:
+async def refresh_access_token(refresh_token: str = Body(..., embed=True)) -> dict[str, Any]:
+    # async def refresh_access_token(refresh_token: str) -> dict[str, Any]:
     data = await student.refresh_access_token(refresh_token)
     return {'data': data, 'status': 'SUCCESS'}
 

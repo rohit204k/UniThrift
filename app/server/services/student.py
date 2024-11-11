@@ -44,8 +44,8 @@ async def create_user(params: UserCreateRequest) -> dict[str, Any]:
     user_data['user_type'] = Role.STUDENT
     user_data['is_verified'] = False
     password = user_data.pop('password')
-    encrypted_password = crypto_utils.sha1(password)
-    encrypted_password = crypto_utils.sha256(encrypted_password)
+    password = crypto_utils.sha1(password)
+    encrypted_password = crypto_utils.sha256(password)
     # Running transactions in mongo. Transactions require cluster setup.
     # If any db operation within the content of a transaction fails, the entire transaction is rolled back.
     async with await core_service.get_session() as session:
@@ -264,7 +264,7 @@ async def get_an_user(user_id: str) -> dict[str, Any]:
     return await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_id, 'is_deleted': False})
 
 
-async def student_update(params: UserUpdateRequest, user_data) -> dict[str, Any]:
+async def student_update(params: UserUpdateRequest, user_data: dict[str, Any]) -> dict[str, Any]:
     """Update student information
 
     Args:
@@ -277,16 +277,15 @@ async def student_update(params: UserUpdateRequest, user_data) -> dict[str, Any]
     Returns:
         dict[str, Any]: A dictionary object with success message.
     """
+    params = params.dict()
 
-    user_data = params.dict()
-
-    existing_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email})
+    existing_user = await core_service.read_one(Collections.USERS, data_filter={'_id': user_data.get('user_id')})
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
-    user_data = UserUpdateDB(**user_data)
+    params = UserUpdateDB(**params)
 
-    await core_service.update_one(Collections.USERS, data_filter={'email': params.email}, update={'$set': user_data}, upsert=True)
+    await core_service.update_one(Collections.USERS, data_filter={'_id': user_data.get('user_id')}, update={'$set': params.dict(exclude_none=True)}, upsert=True)
 
     return {'message': 'User updated successfully'}
 
