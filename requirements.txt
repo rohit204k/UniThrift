@@ -10,7 +10,7 @@ httpx==0.25.0
 kafka-python==2.0.2
 loguru==0.7.2
 marshmallow==3.21.1
-motor==3.3.1
+motor==3.6.0
 opencv-python-headless==4.8.0.76
 orjson==3.9.9
 pandas==2.1.1
