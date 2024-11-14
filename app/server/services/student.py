@@ -228,7 +228,7 @@ async def verify_otp(params: VerifyOtpRequest):
     return {'message': 'User verified successfully'}
 
 
-async def get_users_paginated(page: int, page_size: int, search_query: Optional[str]) -> list[dict[str, Any]]:
+async def get_students(page: int, page_size: int, search_query: Optional[str]) -> list[dict[str, Any]]:
     """
     Get a paginated list of users.
 

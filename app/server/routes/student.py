@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends
 
@@ -41,17 +41,13 @@ async def refresh_access_token(refresh_token: str = Body(..., embed=True)) -> di
     return {'data': data, 'status': 'SUCCESS'}
 
 
-# @router.get("/auth/users/paginated", summary="Gets all users in paginated form")
-# async def get_all_industry_paginated(
-#     page: int = 1, page_size: int = 10, search_query: Optional[str] = None
-# ) -> dict[str, Any]:
-#     data = await student.get_students_paginated(
-#         page=page, page_size=page_size, search_query=search_query
-#     )
-#     return {"data": data, "status": "SUCCESS"}
-
-
 @router.put('/students/update', summary='Update student profile')
 async def student_update(params: UserUpdateRequest, user_data=Depends(JWTAuthUser(['STUDENT']))) -> dict[str, Any]:
     data = await student.student_update(params, user_data)
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/auth/users/paginated', summary='Gets all users in paginated form')
+async def get_all_industry_paginated(page: int = 1, page_size: int = 10, search_query: Optional[str] = None) -> dict[str, Any]:
+    data = await student.get_students(page=page, page_size=page_size, search_query=search_query)
     return {'data': data, 'status': 'SUCCESS'}
