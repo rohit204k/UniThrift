@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends
 from app.server.models.auth import EmailLoginRequest, OtpRequest, VerifyOtpRequest
 from app.server.models.users import UserCreateRequest, UserUpdateRequest
 from app.server.services import student
+from app.server.static.enums import Role
 from app.server.utils.token_util import JWTAuthUser
 
 router = APIRouter()
@@ -42,13 +43,13 @@ async def refresh_access_token(refresh_token: str = Body(..., embed=True)) -> di
 
 
 @router.put('/student/update', summary='Update student profile')
-async def student_update(params: UserUpdateRequest, user_data=Depends(JWTAuthUser(['STUDENT']))) -> dict[str, Any]:
+async def student_update(params: UserUpdateRequest, user_data=Depends(JWTAuthUser([Role.STUDENT]))) -> dict[str, Any]:
     data = await student.student_update(params, user_data)
     return {'data': data, 'status': 'SUCCESS'}
 
 
 @router.get('/student/get_student', summary='Get student data')
-async def get_student(user_data=Depends(JWTAuthUser(['STUDENT']))) -> dict[str, Any]:
+async def get_student(user_data=Depends(JWTAuthUser([Role.STUDENT]))) -> dict[str, Any]:
     data = await student.get_student(user_data)
     return {'data': data, 'status': 'SUCCESS'}
 

@@ -59,14 +59,6 @@ async def create_user(params: UserCreateRequest) -> dict[str, Any]:
             password_data = password_data.dict(exclude_none=True)
             await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': create_user_res['_id']}, update={'$set': password_data}, upsert=True, session=session)
 
-    # send email with otp and unique id
-    # template = await template_util.get_template(
-    #     'app/server/templates/account_details.html', user_name=f'{params.first_name} {params.last_name}', user_id=params.email, otp=otp, company_name=constants.APP_NAME
-    # )
-    # await email.send_email(recipients=[params.email], subject=constants.EMAIL_AUTH_HEADER, body=template, is_html=True)
-
-    # await email_service.send_email([params.email], 'Your Credentials', template, is_html=True)
-    # return {'message': 'User created successfully'}
     return {'user_id': create_user_res['_id']}
 
 
