@@ -8,10 +8,11 @@ import app.server.database.core_data as core_service
 from app.server.models.auth import EmailLoginRequest, OtpCreateDB, OtpRequest, VerificationType, VerifyOtpRequest
 from app.server.models.password import PasswordCreateDB
 from app.server.models.users import AdminUpdateDB, AdminUpdateRequest, AdminUserCreateDB, AdminUserCreateRequest
-from app.server.static import localization
+from app.server.static import constants, localization
 from app.server.static.collections import Collections
 from app.server.static.enums import Role, TokenType
-from app.server.utils import crypto_utils, date_utils, password_utils, token_util
+from app.server.utils import crypto_utils, date_utils, password_utils, template_util, token_util
+from app.server.vendor.twilio import email as email_service
 
 
 async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
@@ -54,14 +55,6 @@ async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
             password_data = PasswordCreateDB(**password_data)
             password_data = password_data.dict(exclude_none=True)
             await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': create_user_res['_id']}, update={'$set': password_data}, upsert=True, session=session)
-
-    # send email with otp and unique id
-    # template = await template_util.get_template(
-    #     'app/server/templates/account_details.html', user_name=f'{params.first_name} {params.last_name}', user_id=params.email, otp=otp, company_name=constants.APP_NAME
-    # )
-    # await email.send_email(recipients=[params.email], subject=constants.EMAIL_AUTH_HEADER, body=template, is_html=True)
-
-    # await email_service.send_email([params.email], 'Your Credentials', template, is_html=True)
 
     return {'user_id': create_user_res['_id']}
 
@@ -146,7 +139,7 @@ async def refresh_access_token(token: str):
 
 async def send_otp(params: OtpRequest):
     """
-    Sends an email toa the user with a randomly generated OTP.
+    Sends an email to the user with a randomly generated OTP.
 
     Args:
       email: An email address as a string of the user requesting a new password.
@@ -157,7 +150,7 @@ async def send_otp(params: OtpRequest):
     Raises:
       HTTPException: If the user is not found in the database.
     """
-    existing_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'user_type': Role.ADMIN})
+    existing_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'user_type': Role.ADMIN, 'is_deleted': False})
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
@@ -170,12 +163,18 @@ async def send_otp(params: OtpRequest):
     await core_service.update_one(Collections.OTP, data_filter={'user_id': existing_user['_id']}, update={'$set': otp_data}, upsert=True)
 
     # send email with default password and unique id
-    # template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
-    # template = await template_util.get_template(
-    #     template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', password=password, company_name='Wow Labz'
-    # )
-    # await email_service.send_email([email], 'Forgot Password', template, is_html=True)
-    return {'user_id': existing_user['_id']}
+    if params.verification_type == VerificationType.AUTHENTICATION:
+        template_path = constants.VERIFICATION_TEMPLATE_PATH
+        email_header = constants.VERIFICATION_MAIL_HEADER
+    else:
+        template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
+        email_header = constants.FORGOT_PASSWORD_MAIL_HEADER
+
+    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp, company_name=constants.UNITHRIFT)
+
+    await email_service.send_email([params.email], email_header, template, is_html=True)
+
+    return {'message': 'Mail sent successfully'}
 
 
 async def verify_otp(params: VerifyOtpRequest):
