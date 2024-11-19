@@ -12,6 +12,7 @@ class EmailLoginRequest(BaseModel):
 
 class OtpRequest(BaseModel):
     email: EmailStr
+    verification_type: VerificationType
     # phone: constr(min_length=1, max_length=30, strip_whitespace=True)
 
 

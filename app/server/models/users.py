@@ -11,6 +11,7 @@ class UserCreateRequest(BaseModel):
     first_name: constr(min_length=1, max_length=150, strip_whitespace=True)
     last_name: constr(min_length=1, max_length=150, strip_whitespace=True)
     email: EmailStr
+    university: constr(min_length=1, max_length=150, strip_whitespace=True)
     university_id: constr(min_length=1, max_length=15, strip_whitespace=True)
     phone: Optional[constr(min_length=1, max_length=30, strip_whitespace=True)] = ''
     address: Optional[constr(min_length=1, max_length=150, strip_whitespace=True)] = ''
@@ -28,6 +29,7 @@ class UserCreateDB(BaseModel):
     first_name: str
     last_name: str
     email: str
+    university: str
     university_id: str
     phone: str
     address: Optional[str] = ''

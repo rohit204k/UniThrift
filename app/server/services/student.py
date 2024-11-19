@@ -8,10 +8,11 @@ import app.server.database.core_data as core_service
 from app.server.models.auth import EmailLoginRequest, OtpCreateDB, OtpRequest, VerificationType, VerifyOtpRequest
 from app.server.models.password import PasswordCreateDB
 from app.server.models.users import UserCreateDB, UserCreateRequest, UserUpdateDB, UserUpdateRequest
-from app.server.static import localization
+from app.server.static import constants, localization
 from app.server.static.collections import Collections
 from app.server.static.enums import Role, TokenType
-from app.server.utils import crypto_utils, date_utils, password_utils, token_util
+from app.server.utils import crypto_utils, date_utils, password_utils, template_util, token_util
+from app.server.vendor.twilio import email as email_service
 
 
 async def create_user(params: UserCreateRequest) -> dict[str, Any]:
@@ -65,7 +66,7 @@ async def create_user(params: UserCreateRequest) -> dict[str, Any]:
     # await email.send_email(recipients=[params.email], subject=constants.EMAIL_AUTH_HEADER, body=template, is_html=True)
 
     # await email_service.send_email([params.email], 'Your Credentials', template, is_html=True)
-
+    # return {'message': 'User created successfully'}
     return {'user_id': create_user_res['_id']}
 
 
@@ -130,6 +131,9 @@ async def login(params: EmailLoginRequest) -> dict[str, Any]:
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
+    if not existing_user.get('is_verified'):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, localization.EXCEPTION_USER_NOT_VERIFIED)
+
     existing_password = await core_service.read_one(Collections.PASSWORD, data_filter={'user_id': existing_user['_id']})
 
     if not existing_password:
@@ -168,12 +172,18 @@ async def send_otp(params: OtpRequest):
     await core_service.update_one(Collections.OTP, data_filter={'user_id': existing_user['_id']}, update={'$set': otp_data}, upsert=True)
 
     # send email with default password and unique id
-    # template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
-    # template = await template_util.get_template(
-    #     template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', password=password, company_name='Wow Labz'
-    # )
-    # await email_service.send_email([email], 'Forgot Password', template, is_html=True)
-    return {'user_id': existing_user['_id']}
+    if params.verification_type == VerificationType.AUTHENTICATION:
+        template_path = constants.VERIFICATION_TEMPLATE_PATH
+        email_header = constants.VERIFICATION_MAIL_HEADER
+    else:
+        template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
+        email_header = constants.FORGOT_PASSWORD_MAIL_HEADER
+
+    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp, company_name=constants.UNITHRIFT)
+
+    await email_service.send_email([params.email], email_header, template, is_html=True)
+
+    return {'message': 'Mail sent successfully'}
 
 
 async def verify_otp(params: VerifyOtpRequest):
@@ -230,15 +240,15 @@ async def verify_otp(params: VerifyOtpRequest):
 
 async def get_students(page: int, page_size: int, search_query: Optional[str]) -> list[dict[str, Any]]:
     """
-    Get a paginated list of users.
+    Get a paginated list of students.
 
     Args:
         page (int): The page number to retrieve.
         page_size (int): The number of items to retrieve per page.
-        search_query (Optional[str]): A query string to filter the users by name.
+        search_query (Optional[str]): A query string to filter the students by name.
 
     Returns:
-        list[dict[str, Any]]: A list of dictionaries representing the users.
+        list[dict[str, Any]]: A list of dictionaries representing the students.
 
     Raises:
         None
@@ -248,20 +258,16 @@ async def get_students(page: int, page_size: int, search_query: Optional[str]) -
     return await core_service.query_read(collection_name=Collections.USERS, aggregate=aggregate_query, page=page, page_size=page_size, paging_data=True)
 
 
-async def get_an_user(user_id: str) -> dict[str, Any]:
-    """
-    Get an user by ID.
+async def get_student(user_data: dict[str, Any]) -> dict[str, Any]:
+    """Get student details
 
     Args:
-        user_id (str): The ID of the user to retrieve.
+        user_data (dict[str, Any]): Token data of the student
 
     Returns:
-        dict[str, Any]: A dictionary containing the user information.
-
-    Raises:
-        None
+        dict[str, Any]: A dictionary object with student details
     """
-    return await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_id, 'is_deleted': False})
+    return await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
 
 
 async def student_update(params: UserUpdateRequest, user_data: dict[str, Any]) -> dict[str, Any]:
