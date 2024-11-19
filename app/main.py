@@ -21,6 +21,7 @@ from app.server.logger.custom_logger import logger
 from app.server.middlewares.exceptions import ExceptionHandlerMiddleware
 from app.server.middlewares.request_gzip import GzipRoute
 from app.server.middlewares.tracker import RequestsTrackerMiddleware
+from app.server.routes.admin import router as ADMIN
 
 # from app.server.routes.auth_manager import router as AUTH_MANAGER
 from app.server.routes.student import router as STUDENT
@@ -43,6 +44,7 @@ GZIP_REQUEST_ROUTE = APIRouter(route_class=GzipRoute)
 app.include_router(GZIP_REQUEST_ROUTE)
 # app.include_router(AUTH_MANAGER, tags=['AUTH'], prefix='/api/v1')
 app.include_router(STUDENT, tags=['STUDENT'], prefix='/api/v1')
+app.include_router(ADMIN, tags=['ADMIN'], prefix='/api/v1')
 
 # add exception handlers
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
