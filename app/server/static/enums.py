@@ -25,3 +25,9 @@ class UserStatus(str, Enum):
 class VerificationType(str, Enum):
     AUTHENTICATION = 'AUTHENTICATION'
     FORGOT_PASSWORD = 'FORGOT_PASSWORD'
+
+
+class ListingStatus(str, Enum):
+    NEW = 'NEW'
+    ON_HOLD = 'ON_HOLD'
+    SOLD = 'SOLD'

@@ -22,8 +22,7 @@ from app.server.middlewares.exceptions import ExceptionHandlerMiddleware
 from app.server.middlewares.request_gzip import GzipRoute
 from app.server.middlewares.tracker import RequestsTrackerMiddleware
 from app.server.routes.admin import router as ADMIN
-
-# from app.server.routes.auth_manager import router as AUTH_MANAGER
+from app.server.routes.listing import router as LISTING
 from app.server.routes.student import router as STUDENT
 from app.server.utils import date_utils, mongo_utils
 from app.server.utils.token_util import authorize_docs
@@ -45,6 +44,7 @@ app.include_router(GZIP_REQUEST_ROUTE)
 # app.include_router(AUTH_MANAGER, tags=['AUTH'], prefix='/api/v1')
 app.include_router(STUDENT, tags=['STUDENT'], prefix='/api/v1')
 app.include_router(ADMIN, tags=['ADMIN'], prefix='/api/v1')
+app.include_router(LISTING, tags=['LISTING'], prefix='/api/v1')
 
 # add exception handlers
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -84,12 +84,8 @@ async def openapi(_username: str = Depends(authorize_docs)):
 @app.on_event('startup')
 async def startup_event():
     logger.debug(f'App startup: {str(date_utils.get_current_date_time())}')
-
-    # await producer.start()
-    # for i in range(300,302):
-    #     await producer.send('kafka_test', {'upload_id': i})
     await mongo_utils.create_indexes()
-    # await send_email(recipients=['shekharrana0145@gmail.com'], subject='DEV_TEST', body='HELLO')
+    # await send_email(recipients=['gundakallirohit@@gmail.com'], subject='DEV_TEST', body='HELLO')
 
 
 @app.on_event('shutdown')
