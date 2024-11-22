@@ -59,7 +59,7 @@ async def create_user(params: UserCreateRequest) -> dict[str, Any]:
             password_data = password_data.dict(exclude_none=True)
             await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': create_user_res['_id']}, update={'$set': password_data}, upsert=True, session=session)
 
-    return {'user_id': create_user_res['_id']}
+    return {'message': 'User created successfully'}
 
 
 async def create_login_token(token_payload: dict[str, Any]) -> dict[str, Any]:
@@ -122,6 +122,9 @@ async def login(params: EmailLoginRequest) -> dict[str, Any]:
 
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
+
+    if existing_user['user_type'] != Role.STUDENT:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, localization.EXCEPTION_UNAUTHORIZED_ACCESS)
 
     if not existing_user.get('is_verified'):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, localization.EXCEPTION_USER_NOT_VERIFIED)
@@ -259,7 +262,11 @@ async def get_student(user_data: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary object with student details
     """
-    return await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
+    user_data = await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
+    if not user_data:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
+
+    return user_data
 
 
 async def student_update(params: UserUpdateRequest, user_data: dict[str, Any]) -> dict[str, Any]:
@@ -286,6 +293,3 @@ async def student_update(params: UserUpdateRequest, user_data: dict[str, Any]) -
     await core_service.update_one(Collections.USERS, data_filter={'_id': user_data.get('user_id')}, update={'$set': params.dict(exclude_none=True)}, upsert=True)
 
     return {'message': 'User updated successfully'}
-
-
-# def send_otp(params: OtpRequest) -> dict[str, Any]:

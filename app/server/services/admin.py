@@ -31,11 +31,11 @@ async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
     """
     user_data = params.dict()
 
-    existing_email = await core_service.read_one(Collections.USERS, data_filter={'email': params.email})
+    existing_email = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'is_deleted': False})
     if existing_email:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_EMAIL_EXISTS)
 
-    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'email': params.university_id})
+    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'email': params.university_id, 'is_deleted': False})
     if existing_university_id:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_UNIVERSITY_ID_EXISTS)
 
@@ -79,6 +79,9 @@ async def login(params: EmailLoginRequest) -> dict[str, Any]:
 
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
+
+    if existing_user['user_type'] != Role.ADMIN:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, localization.EXCEPTION_UNAUTHORIZED_ACCESS)
 
     is_verified_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'is_verified': False})
     if is_verified_user:
