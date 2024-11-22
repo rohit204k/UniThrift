@@ -22,6 +22,8 @@ from app.server.middlewares.exceptions import ExceptionHandlerMiddleware
 from app.server.middlewares.request_gzip import GzipRoute
 from app.server.middlewares.tracker import RequestsTrackerMiddleware
 from app.server.routes.admin import router as ADMIN
+from app.server.routes.common import router as COMMON
+from app.server.routes.item_categories import router as ITEM_CATEGORIES
 
 # from app.server.routes.auth_manager import router as AUTH_MANAGER
 from app.server.routes.student import router as STUDENT
@@ -45,6 +47,8 @@ app.include_router(GZIP_REQUEST_ROUTE)
 # app.include_router(AUTH_MANAGER, tags=['AUTH'], prefix='/api/v1')
 app.include_router(STUDENT, tags=['STUDENT'], prefix='/api/v1')
 app.include_router(ADMIN, tags=['ADMIN'], prefix='/api/v1')
+app.include_router(ITEM_CATEGORIES, tags=['ITEM_CATEGORIES'], prefix='/api/v1')
+app.include_router(COMMON, tags=['COMMON'], prefix='/api/v1')
 
 # add exception handlers
 app.add_exception_handler(RequestValidationError, validation_exception_handler)

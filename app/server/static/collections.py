@@ -10,3 +10,5 @@ class Collections:
     MULTIPART_UPLOAD = 'multipart_upload'
     MULTIPART_ETAGS = 'multipart_etags'
     OTP = 'otp'
+    UNIVERSITIES = 'universities'
+    ITEMS = 'items'

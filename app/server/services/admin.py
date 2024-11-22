@@ -291,3 +291,35 @@ async def admin_update(params: AdminUpdateRequest, user_data) -> dict[str, Any]:
     await core_service.update_one(Collections.USERS, data_filter={'_id': user_data.get('user_id')}, update={'$set': params.dict(exclude_none=True)}, upsert=True)
 
     return {'message': 'User updated successfully'}
+
+
+async def get_users(page: int, page_size: int, search_query: Optional[str]) -> list[dict[str, Any]]:
+    """
+    Get a paginated list of students.
+
+    Args:
+        page (int): The page number to retrieve.
+        page_size (int): The number of items to retrieve per page.
+        search_query (Optional[str]): A query string to filter the students by name.
+
+    Returns:
+        list[dict[str, Any]]: A list of dictionaries representing the students.
+
+    Raises:
+        None
+    """
+    aggregate_query: list[dict[str, Any]] = [{'$match': {'name': {'$regex': search_query, '$options': 'i'}}}, {'$sort': {'name': 1}}] if search_query else [{'$sort': {'name': 1}}]
+
+    return await core_service.query_read(collection_name=Collections.USERS, aggregate=aggregate_query, page=page, page_size=page_size, paging_data=True)
+
+
+async def get_user(user_data: dict[str, Any]) -> dict[str, Any]:
+    """Get student details
+
+    Args:
+        user_data (dict[str, Any]): Token data of the student
+
+    Returns:
+        dict[str, Any]: A dictionary object with student details
+    """
+    return await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
