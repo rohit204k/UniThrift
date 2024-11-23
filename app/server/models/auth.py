@@ -27,4 +27,5 @@ class OtpCreateDB(BaseModel):
     user_id: constr(min_length=1, max_length=30, strip_whitespace=True)
     otp: constr(min_length=1, max_length=6, strip_whitespace=True)
     is_used: bool = False
+    used_for: VerificationType
     expiry: int
