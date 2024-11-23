@@ -159,7 +159,7 @@ async def send_otp(params: OtpRequest):
 
     otp = password_utils.generate_random_otp(6)
 
-    otp_data = {'user_id': existing_user['_id'], 'otp': otp, 'is_used': False, 'expiry': date_utils.get_timestamp(expires_delta=timedelta(hours=1))}
+    otp_data = {'user_id': existing_user['_id'], 'otp': otp, 'is_used': False, 'used_for': params.verification_type, 'expiry': date_utils.get_timestamp(expires_delta=timedelta(hours=1))}
 
     otp_data = OtpCreateDB(**otp_data)
     otp_data = otp_data.dict(exclude_none=True)
@@ -222,7 +222,7 @@ async def verify_otp(params: VerifyOtpRequest):
 
         # return {'message': 'Password updated successfully'}
 
-    else:  # R1705
+    else:
         async with await core_service.get_session() as session:
             async with session.start_transaction():
                 await core_service.update_one(Collections.USERS, data_filter={'_id': existing_user['_id']}, update={'$set': {'is_verified': True}}, upsert=True, session=session)

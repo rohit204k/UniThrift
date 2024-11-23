@@ -40,7 +40,7 @@ async def update_listing(listing_id: str, params: ListingUpdateRequest, user_dat
     return {'data': data, 'status': 'SUCCESS'}
 
 
-@router.delete('listing/delete/{listing_id}', summary='Delete a listing')
+@router.delete('/listing/delete/{listing_id}', summary='Delete a listing')
 async def delete_listing(listing_id: str, user_data=Depends(JWTAuthUser([Role.STUDENT, Role.ADMIN]))) -> dict[str, Any]:
     data = await listing.delete_listing(listing_id, user_data)
     return {'data': data, 'status': 'SUCCESS'}
