@@ -7,43 +7,42 @@ from fastapi import HTTPException
 from fastapi.datastructures import UploadFile
 
 from app.server.config import config
-from app.server.utils import file_utils, image_utils
+from app.server.utils import file_utils  # , image_utils
 from app.server.vendor.aws.client import storage_client
 
-
 # pylint: disable=too-many-locals
-async def upload_file_with_thumb(folder: str, file: UploadFile, compress: bool = False, quality: int = 90, sizes: list[float] = None) -> dict[str, Any]:
-    """Uploads file to specific folder on AWS S3
+# async def upload_file_with_thumb(folder: str, file: UploadFile, compress: bool = False, quality: int = 90, sizes: list[float] = None) -> dict[str, Any]:
+#     """Uploads file to specific folder on AWS S3
 
-    Args:
-        folder (str): Directory where the file is to be written. Could be nested sub directories
-        file (UploadFile): file object
+#     Args:
+#         folder (str): Directory where the file is to be written. Could be nested sub directories
+#         file (UploadFile): file object
 
-    Returns:
-        dict[str, Any]: response
-    """
-    file_bytes = file.file.read()
+#     Returns:
+#         dict[str, Any]: response
+#     """
+#     file_bytes = file.file.read()
 
-    # compress the original image bytes
-    if compress:
-        file_bytes = image_utils.compress_image_bytes(file_bytes, quality)
+#     # compress the original image bytes
+#     if compress:
+#         file_bytes = image_utils.compress_image_bytes(file_bytes, quality)
 
-    mime_type = file.content_type
-    image_type = mime_type.rsplit('/')[0].lower()
-    image_data = {}
+#     mime_type = file.content_type
+#     image_type = mime_type.rsplit('/')[0].lower()
+#     image_data = {}
 
-    if sizes and image_type == 'image':
-        resized_images = image_utils.image_to_thumbs_from_bytes(file_bytes, sizes)
-        counter = 1
-        for size, image_bytes in resized_images.items():
-            file_name = f'thumb_{size}_{file.filename}'
-            uploaded_res = await upload_file_with_mime_type(folder, image_bytes, file_name, mime_type)
-            image_data[f'thumb{counter}'] = uploaded_res
-            counter += 1
+#     if sizes and image_type == 'image':
+#         resized_images = image_utils.image_to_thumbs_from_bytes(file_bytes, sizes)
+#         counter = 1
+#         for size, image_bytes in resized_images.items():
+#             file_name = f'thumb_{size}_{file.filename}'
+#             uploaded_res = await upload_file_with_mime_type(folder, image_bytes, file_name, mime_type)
+#             image_data[f'thumb{counter}'] = uploaded_res
+#             counter += 1
 
-    original_upload_res = await upload_file_with_mime_type(folder, file_bytes, file.filename, mime_type)
-    image_data['original'] = original_upload_res
-    return image_data
+#     original_upload_res = await upload_file_with_mime_type(folder, file_bytes, file.filename, mime_type)
+#     image_data['original'] = original_upload_res
+#     return image_data
 
 
 async def upload_file(folder: str, file: UploadFile) -> dict[str, Any]:

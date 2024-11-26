@@ -7,12 +7,14 @@ from app.server.static.enums import ListingStatus
 
 
 class ListingCreateRequest(BaseModel):
+    title: constr(min_length=1, max_length=250, strip_whitespace=True)
     item_id: constr(min_length=1, max_length=150, strip_whitespace=True)
     description: constr(min_length=1, max_length=450, strip_whitespace=True)
     price: conint(ge=0)
 
 
 class ListingCreateDB(BaseModel):
+    title: str
     item_name: str
     description: str
     price: int
@@ -21,12 +23,14 @@ class ListingCreateDB(BaseModel):
 
 
 class ListingUpdateRequest(BaseModel):
+    title: Optional[constr(min_length=1, max_length=250, strip_whitespace=True)]
     description: Optional[constr(min_length=1, max_length=450, strip_whitespace=True)]
     price: Optional[conint(ge=0)]
     status: Optional[ListingStatus]
 
 
 class ListingUpdateDB(BaseModel):
+    title: Optional[str]
     description: Optional[str]
     price: Optional[int]
     status: Optional[ListingStatus]

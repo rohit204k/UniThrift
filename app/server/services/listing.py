@@ -28,7 +28,7 @@ async def create_listing(params: ListingCreateRequest, user_data: dict[str, any]
     if not existing_item:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_ITEM_NOT_FOUND)
 
-    listing_data['item_name'] = 'Item'  # existing_item['item_name']
+    listing_data['item_name'] = existing_item['item_name']
     listing_data.pop('item_id')
     listing_data['status'] = ListingStatus.NEW
     listing_data['seller_id'] = user_data.get('user_id')
