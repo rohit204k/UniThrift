@@ -37,3 +37,10 @@ class FileType(str, Enum):
     JPEG = 'jpeg'
     PNG = 'png'
     JPG = 'jpg'
+
+
+class SaleStatus(str, Enum):
+    INTERESTED = 'INTERESTED'
+    SHARE_DETAILS = 'SHARE_DETAILS'
+    SOLD = 'SOLD'
+    REJECTED = 'REJECTED'

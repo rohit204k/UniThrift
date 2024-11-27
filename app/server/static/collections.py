@@ -13,3 +13,4 @@ class Collections:
     ITEMS = 'items'
     LISTINGS = 'listings'
     UNIVERSITIES = 'universities'
+    TRANSACTIONS = 'transactions'
