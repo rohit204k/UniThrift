@@ -25,6 +25,7 @@ from app.server.routes.admin import router as ADMIN
 from app.server.routes.common import router as COMMON
 from app.server.routes.item_categories import router as ITEM_CATEGORIES
 from app.server.routes.listing import router as LISTING
+from app.server.routes.queueing import router as QUEUEING
 from app.server.routes.student import router as STUDENT
 from app.server.utils import date_utils, mongo_utils
 from app.server.utils.token_util import authorize_docs
@@ -49,6 +50,7 @@ app.include_router(ADMIN, tags=['ADMIN'], prefix='/api/v1')
 app.include_router(LISTING, tags=['LISTING'], prefix='/api/v1')
 app.include_router(ITEM_CATEGORIES, tags=['ITEM_CATEGORIES'], prefix='/api/v1')
 app.include_router(COMMON, tags=['COMMON'], prefix='/api/v1')
+app.include_router(QUEUEING, tags=['QUEUEING'], prefix='/api/v1')
 
 # add exception handlers
 app.add_exception_handler(RequestValidationError, validation_exception_handler)

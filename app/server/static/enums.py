@@ -31,3 +31,10 @@ class ListingStatus(str, Enum):
     NEW = 'NEW'
     ON_HOLD = 'ON_HOLD'
     SOLD = 'SOLD'
+
+
+class SaleStatus(str, Enum):
+    INTERESTED = 'INTERESTED'
+    SHARE_DETAILS = 'SHARE_DETAILS'
+    SOLD = 'SOLD'
+    REJECTED = 'REJECTED'
