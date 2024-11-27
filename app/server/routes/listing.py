@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, Depends
 
-from app.server.models.listing import ListingCreateRequest, ListingUpdateRequest
+from app.server.models.listing import ListingCreateRequest, ListingImageRequest, ListingUpdateRequest
 from app.server.services import listing
 from app.server.static.enums import Role
 from app.server.utils.token_util import JWTAuthUser
@@ -43,4 +43,16 @@ async def update_listing(listing_id: str, params: ListingUpdateRequest, user_dat
 @router.delete('/listing/delete/{listing_id}', summary='Delete a listing')
 async def delete_listing(listing_id: str, user_data=Depends(JWTAuthUser([Role.STUDENT, Role.ADMIN]))) -> dict[str, Any]:
     data = await listing.delete_listing(listing_id, user_data)
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.post('/listing/image/generate_upload_url', summary='Generate a presigned url')
+async def generate_image_upload_url(params: ListingImageRequest, user_data=Depends(JWTAuthUser([Role.STUDENT]))) -> dict[str, Any]:
+    data = await listing.generate_image_upload_url(params, user_data)
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/listing/image/generate_get_url', summary='Get a file from s3')
+async def get_file(key: str, _token=Depends(JWTAuthUser([Role.STUDENT, Role.ADMIN]))) -> dict[str, Any]:
+    data = await listing.generate_image_get_url(key)
     return {'data': data, 'status': 'SUCCESS'}

@@ -3,10 +3,12 @@ from typing import Any, Optional
 from fastapi import HTTPException, status
 
 import app.server.database.core_data as core_service
-from app.server.models.listing import ListingCreateDB, ListingCreateRequest, ListingUpdateDB, ListingUpdateRequest
+from app.server.models.listing import ListingCreateDB, ListingCreateRequest, ListingImageRequest, ListingUpdateDB, ListingUpdateRequest
 from app.server.static import localization
 from app.server.static.collections import Collections
 from app.server.static.enums import ListingStatus, Role
+from app.server.utils.date_utils import get_current_timestamp
+from app.server.vendor.aws.storage import generate_presigned_put, generate_presigned_url
 
 
 async def create_listing(params: ListingCreateRequest, user_data: dict[str, any]) -> dict[str, Any]:
@@ -32,6 +34,7 @@ async def create_listing(params: ListingCreateRequest, user_data: dict[str, any]
     listing_data.pop('item_id')
     listing_data['status'] = ListingStatus.NEW
     listing_data['seller_id'] = user_data.get('user_id')
+    listing_data['images'] = []
 
     listing_data = ListingCreateDB(**listing_data).dict(exclude_none=True)
     await core_service.create_one(Collections.LISTINGS, data=listing_data)
@@ -151,3 +154,52 @@ async def delete_listing(listing_id: str, user_data: dict[str, Any]) -> dict[str
     await core_service.update_one(Collections.LISTINGS, data_filter={'_id': listing_id}, update={'$set': params}, upsert=False)
 
     return {'message': 'Listing deleted successfully'}
+
+
+async def generate_image_upload_url(params: ListingImageRequest, user_data: dict[str, Any]) -> dict[str, Any]:
+    """Upload file to s3 bucket
+
+    Args:
+        filename (UploadFile): The file to be uploaded
+
+    Returns:
+        _type_: Success message
+    """
+    listing_data = await core_service.read_one(collection_name=Collections.LISTINGS, data_filter={'_id': params.listing_id, 'seller_id': user_data['user_id'], 'is_deleted': False})
+    if not listing_data:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_LISTING_NOT_FOUND)
+
+    if listing_data['status'] == ListingStatus.SOLD:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_LISTING_MARKED_SOLD)
+
+    listing_images_list = listing_data['images']
+    key = params.listing_id + '_' + user_data['user_id'] + '_' + str(get_current_timestamp()) + '.' + params.file_extension
+    listing_images_list.append(key)
+
+    params = ListingUpdateDB(**{'images': listing_images_list})
+
+    async with await core_service.get_session() as session:
+        async with session.start_transaction():
+            params = ListingUpdateDB(**params.dict(exclude_none=True))
+
+            await core_service.update_one(Collections.LISTINGS, data_filter={'_id': listing_data.get('_id')}, update={'$set': params.dict(exclude_none=True)}, upsert=True)
+
+            presigned_put_url = await generate_presigned_put(key)
+
+    data = {'url': presigned_put_url}
+
+    return data
+
+
+async def generate_image_get_url(key: str) -> dict[str, Any]:
+    """Get presigned get url for given key
+
+    Args:
+        key (str): key of file
+
+    Returns:
+        dict[str, Any]: Success message
+    """
+    presigned_url = await generate_presigned_url(key)
+    data = {'url': presigned_url}
+    return data

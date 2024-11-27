@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import conint, constr
 
 from app.server.models.generic import BaseModel
-from app.server.static.enums import ListingStatus
+from app.server.static.enums import FileType, ListingStatus
 
 
 class ListingCreateRequest(BaseModel):
@@ -18,6 +18,7 @@ class ListingCreateDB(BaseModel):
     item_name: str
     description: str
     price: int
+    images: list[str]
     status: ListingStatus
     seller_id: str
 
@@ -27,6 +28,7 @@ class ListingUpdateRequest(BaseModel):
     description: Optional[constr(min_length=1, max_length=450, strip_whitespace=True)]
     price: Optional[conint(ge=0)]
     status: Optional[ListingStatus]
+    images: Optional[list[str]]
 
 
 class ListingUpdateDB(BaseModel):
@@ -34,3 +36,9 @@ class ListingUpdateDB(BaseModel):
     description: Optional[str]
     price: Optional[int]
     status: Optional[ListingStatus]
+    images: Optional[list[str]]
+
+
+class ListingImageRequest(BaseModel):
+    listing_id: constr(min_length=1, max_length=250, strip_whitespace=True)
+    file_extension: FileType

@@ -31,3 +31,9 @@ class ListingStatus(str, Enum):
     NEW = 'NEW'
     ON_HOLD = 'ON_HOLD'
     SOLD = 'SOLD'
+
+
+class FileType(str, Enum):
+    JPEG = 'jpeg'
+    PNG = 'png'
+    JPG = 'jpg'
