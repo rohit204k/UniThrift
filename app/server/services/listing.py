@@ -37,9 +37,9 @@ async def create_listing(params: ListingCreateRequest, user_data: dict[str, any]
     listing_data['images'] = []
 
     listing_data = ListingCreateDB(**listing_data).dict(exclude_none=True)
-    await core_service.create_one(Collections.LISTINGS, data=listing_data)
+    listing_data = await core_service.create_one(Collections.LISTINGS, data=listing_data)
 
-    return {'message': 'Listing created successfully'}
+    return {'listing_id': listing_data.get('_id')}
 
 
 async def get_all_listings(item_id: Optional[str], page: int, page_size: int) -> list[dict[str, Any]]:
