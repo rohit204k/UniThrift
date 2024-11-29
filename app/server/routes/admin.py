@@ -45,3 +45,21 @@ async def refresh_access_token(refresh_token: str) -> dict[str, Any]:
 async def admin_update(params: AdminUpdateRequest, user_data=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
     data = await admin.admin_update(params, user_data)
     return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/admin/most_listed_items', summary='Get most listed items')
+async def get_most_listed_items(_token=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
+    data = await admin.get_most_listed_items()
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/admin/most_inquired_items', summary='Get most items buyers are most interested in')
+async def get_most_inquired_items(_token=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
+    data = await admin.get_most_inquired_items()
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/admin/get_total_revenue', summary='Get total revenue')
+async def get_total_revenue(_token=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
+    data = await admin.get_total_revenue()
+    return {'data': data, 'status': 'SUCCESS'}
