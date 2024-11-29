@@ -59,7 +59,7 @@ async def get_most_inquired_items(_token=Depends(JWTAuthUser(['ADMIN']))) -> dic
     return {'data': data, 'status': 'SUCCESS'}
 
 
-@router.get('/admin/get_total_revenue', summary='Get total revenue')
+@router.get('/admin/total_revenue', summary='Get total revenue')
 async def get_total_revenue(_token=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
     data = await admin.get_total_revenue()
     return {'data': data, 'status': 'SUCCESS'}
