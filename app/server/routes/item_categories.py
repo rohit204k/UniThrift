@@ -28,13 +28,13 @@ async def add_item(params: ItemCreateRequest, _token=Depends(JWTAuthUser([Role.A
     return {'data': data, 'status': 'SUCCESS'}
 
 
-@router.post('/item_categories/update_item_details/{item_id}', summary='Update Item description')
+@router.put('/item_categories/update_item_details/{item_id}', summary='Update Item description')
 async def update_item(item_id: str, params: ItemUpdateRequest, _token=Depends(JWTAuthUser([Role.ADMIN]))) -> dict[str, Any]:
     data = await item_categories.update_item_details(item_id, params)
     return {'data': data, 'status': 'SUCCESS'}
 
 
-@router.post('/item_categories/delete_item/{item_id}', summary='Deletes the item')
+@router.delete('/item_categories/delete_item/{item_id}', summary='Deletes the item')
 async def delete_item(item_id: str, _token=Depends(JWTAuthUser([Role.ADMIN]))) -> dict[str, Any]:
     data = await item_categories.delete_item(item_id)
     return {'data': data, 'status': 'SUCCESS'}
