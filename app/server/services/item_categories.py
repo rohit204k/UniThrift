@@ -58,7 +58,7 @@ async def add_item(params: ItemCreateRequest) -> dict[str, Any]:
     params.item_name = params.item_name.title()
     item_data = params.dict()
 
-    existing_item = await core_service.read_one(Collections.ITEMS, data_filter={'item_name': params.item_name})
+    existing_item = await core_service.read_one(Collections.ITEMS, data_filter={'item_name': params.item_name, 'is_deleted': False})
     if existing_item:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_EXISTING_ITEM)
 

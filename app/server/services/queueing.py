@@ -23,6 +23,9 @@ async def mark_interested(params: MarkInterestedRequest, user_data: dict[str, an
         dict[str, Any]: Success message.
     """
     interaction_data = params.dict()
+    is_seller = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': params.listing_id, 'seller_id': user_data['user_id']})
+    if is_seller:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_UNAUTHORIZED_INTEREST)
     existing_interaction = await core_service.read_one(Collections.TRANSACTIONS, data_filter={'buyer_id': user_data['user_id'], 'listing_id': params.listing_id})
     if existing_interaction:
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_INTEREST_DUPLICATE)

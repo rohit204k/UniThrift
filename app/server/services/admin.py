@@ -56,7 +56,7 @@ async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
             password_data = password_data.dict(exclude_none=True)
             await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': create_user_res['_id']}, update={'$set': password_data}, upsert=True, session=session)
 
-    return {'user_id': create_user_res['_id']}
+    return {'message': 'Admin user created successfully'}
 
 
 async def login(params: EmailLoginRequest) -> dict[str, Any]:
