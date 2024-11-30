@@ -76,7 +76,7 @@ async def mark_sale_complete(params: MarkSaleCompleteRequest, user_data: dict[st
     if not transaction_data:
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_INTEREST_NOT_FOUND)
 
-    sale_update = {'status': ListingStatus.SOLD}
+    sale_update = {'status': ListingStatus.SOLD, 'buyer_id': params.buyer_id}
     await core_service.update_one(Collections.LISTINGS, data_filter={'_id': params.listing_id}, update={'$set': sale_update}, upsert=False)
 
     interest_sale_update = {'status': SaleStatus.SOLD}
