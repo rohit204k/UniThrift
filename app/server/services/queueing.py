@@ -52,9 +52,15 @@ async def get_interested_listings(user_data: dict[str, Any], page: int, page_siz
     Returns:
         dict[str, Any]: _description_
     """
-    return await core_service.read_many(
+    interested_listings = await core_service.read_many(
         collection_name=Collections.TRANSACTIONS, data_filter={'buyer_id': user_data['user_id'], 'status': {'$in': [SaleStatus.INTERESTED, SaleStatus.SHARE_DETAILS]}}, page=page, page_size=page_size
     )
+    for listing in interested_listings:
+        listing_details = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': listing['listing_id']})
+        listing['title'] = listing_details['title']
+        listing['seller_id'] = listing_details['seller_id']
+        listing['price'] = listing_details['price']
+    return interested_listings
 
 
 async def mark_sale_complete(params: MarkSaleCompleteRequest, user_data: dict[str, any]) -> dict[str, Any]:
