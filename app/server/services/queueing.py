@@ -84,16 +84,18 @@ async def mark_sale_complete(params: MarkSaleCompleteRequest, user_data: dict[st
     transaction_data = await core_service.read_one(Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': params.buyer_id, 'status': SaleStatus.SHARE_DETAILS})
     if not transaction_data:
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_INTEREST_NOT_FOUND)
-
     sale_update = {'status': ListingStatus.SOLD, 'buyer_id': params.buyer_id}
-    await core_service.update_one(Collections.LISTINGS, data_filter={'_id': params.listing_id}, update={'$set': sale_update}, upsert=False)
-
     interest_sale_update = {'status': SaleStatus.SOLD}
-    await core_service.update_one(Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': params.buyer_id}, update={'$set': interest_sale_update}, upsert=False)
-
     interest_reject_update = {'status': SaleStatus.REJECTED}
-    await core_service.update_many(Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': {'$ne': params.buyer_id}}, update={'$set': interest_reject_update}, upsert=False)
-
+    async with await core_service.get_session() as session:
+        async with session.start_transaction():
+            await core_service.update_one(Collections.LISTINGS, data_filter={'_id': params.listing_id}, update={'$set': sale_update}, upsert=False, session=session)
+            await core_service.update_one(
+                Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': params.buyer_id}, update={'$set': interest_sale_update}, upsert=False, session=session
+            )
+            await core_service.update_many(
+                Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': {'$ne': params.buyer_id}}, update={'$set': interest_reject_update}, upsert=False, session=session
+            )
     return {'message': 'Sale completed successfully'}
 
 
@@ -120,11 +122,13 @@ async def share_contact(params: MarkSaleCompleteRequest, user_data: dict[str, an
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_INTEREST_NOT_FOUND)
 
     sale_update = {'status': ListingStatus.ON_HOLD}
-    await core_service.update_one(Collections.LISTINGS, data_filter={'_id': params.listing_id}, update={'$set': sale_update}, upsert=False)
-
     interest_sale_update = {'status': SaleStatus.SHARE_DETAILS}
-    await core_service.update_one(Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': params.buyer_id}, update={'$set': interest_sale_update}, upsert=False)
-
+    async with await core_service.get_session() as session:
+        async with session.start_transaction():
+            await core_service.update_one(Collections.LISTINGS, data_filter={'_id': params.listing_id}, update={'$set': sale_update}, upsert=False, session=session)
+            await core_service.update_one(
+                Collections.TRANSACTIONS, data_filter={'listing_id': params.listing_id, 'buyer_id': params.buyer_id}, update={'$set': interest_sale_update}, upsert=False, session=session
+            )
     return {'message': 'Your contact details have been shared with the buyer'}
 
 
