@@ -61,11 +61,8 @@ async def add_item(params: ItemCreateRequest) -> dict[str, Any]:
     existing_item = await core_service.read_one(Collections.ITEMS, data_filter={'item_name': params.item_name, 'is_deleted': False})
     if existing_item:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_EXISTING_ITEM)
-
-    async with await core_service.get_session() as session:
-        async with session.start_transaction():
-            item_data = ItemCreateDB(**item_data).dict(exclude_none=True)
-            await core_service.update_one(Collections.ITEMS, data_filter={'item_name': params.item_name}, update={'$set': item_data}, upsert=True, session=session)
+    item_data = ItemCreateDB(**item_data).dict(exclude_none=True)
+    await core_service.update_one(Collections.ITEMS, data_filter={'item_name': params.item_name}, update={'$set': item_data}, upsert=True)
     return {'message': 'Item created successfully'}
 
 
