@@ -57,7 +57,7 @@ async def get_all_listings(item_id: Optional[str], page: int, page_size: int) ->
     Raises:
         None
     """
-    data_filter = {}
+    data_filter = {'status': ListingStatus.SOLD, 'is_deleted': False}
 
     if item_id:
         data_filter['item_id'] = item_id
