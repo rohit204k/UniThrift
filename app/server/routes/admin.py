@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from app.server.models.auth import EmailLoginRequest, OtpRequest, VerifyOtpRequest
 from app.server.models.users import AdminUpdateRequest, AdminUserCreateRequest
 from app.server.services import admin
+from app.server.static.enums import Role
 from app.server.utils.token_util import JWTAuthUser
 
 router = APIRouter()
@@ -62,4 +63,10 @@ async def get_most_inquired_items(_token=Depends(JWTAuthUser(['ADMIN']))) -> dic
 @router.get('/admin/total_revenue', summary='Get total revenue')
 async def get_total_revenue(_token=Depends(JWTAuthUser(['ADMIN']))) -> dict[str, Any]:
     data = await admin.get_total_revenue()
+    return {'data': data, 'status': 'SUCCESS'}
+
+
+@router.get('/admin/get_admin', summary='Get admin data')
+async def get_admin(user_data=Depends(JWTAuthUser([Role.ADMIN]))) -> dict[str, Any]:
+    data = await admin.get_admin(user_data)
     return {'data': data, 'status': 'SUCCESS'}

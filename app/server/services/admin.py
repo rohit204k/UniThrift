@@ -400,3 +400,19 @@ async def get_total_revenue() -> dict[str, Any]:
     ]
 
     return await core_service.query_read(collection_name=Collections.TRANSACTIONS, aggregate=aggregate_query, paging_data=False)
+
+
+async def get_admin(user_data: dict[str, Any]) -> dict[str, Any]:
+    """Get student details
+
+    Args:
+        user_data (dict[str, Any]): Token data of the student
+
+    Returns:
+        dict[str, Any]: A dictionary object with student details
+    """
+    user_data = await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
+    if not user_data:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
+
+    return user_data
