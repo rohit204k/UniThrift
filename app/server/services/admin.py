@@ -394,12 +394,13 @@ async def get_total_revenue() -> dict[str, Any]:
     """
     aggregate_query: list[dict[str, Any]] = [
         {'$match': {'status': 'SOLD'}},
-        {'$lookup': {'from': 'listings', 'localField': 'listing_id', 'foreignField': '_id', 'as': 'listing_details'}},
-        {'$unwind': '$listing_details'},
-        {'$group': {'_id': None, 'total_price': {'$sum': '$listing_details.price'}}},
+        {'$group': {'_id': {'year': {'$year': {'$toDate': '$updated_at'}}, 'month': {'$month': {'$toDate': '$updated_at'}}}, 'total_price': {'$sum': '$price'}}},
+        {'$addFields': {'year': '$_id.year', 'month': '$_id.month', 'revenue': '$total_price'}},
+        {'$project': {'_id': 0, 'year': 1, 'month': 1, 'revenue': 1}},
+        {'$sort': {'year': 1, 'month': 1}},
     ]
 
-    return await core_service.query_read(collection_name=Collections.TRANSACTIONS, aggregate=aggregate_query, paging_data=False)
+    return await core_service.query_read(collection_name=Collections.LISTINGS, aggregate=aggregate_query, paging_data=False)
 
 
 async def get_admin(user_data: dict[str, Any]) -> dict[str, Any]:
