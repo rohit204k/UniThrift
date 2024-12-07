@@ -29,16 +29,15 @@ async def create_user(params: UserCreateRequest) -> dict[str, Any]:
         HTTPException: If user with the same email already exists.
     """
     user_data = params.dict()
-
-    existing_email = await core_service.read_one(Collections.USERS, data_filter={'email': params.email})
+    existing_email = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'is_deleted': False})
     if existing_email:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_EMAIL_EXISTS)
 
-    existing_phone = await core_service.read_one(Collections.USERS, data_filter={'phone': params.phone})
+    existing_phone = await core_service.read_one(Collections.USERS, data_filter={'phone': params.phone, 'is_deleted': False})
     if existing_phone:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_PHONE_EXISTS)
 
-    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'email': params.email})
+    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'university_id': params.university_id, 'is_deleted': False})
     if existing_university_id:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_UNIVERSITY_ID_EXISTS)
 
