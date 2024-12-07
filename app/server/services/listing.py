@@ -63,7 +63,7 @@ async def get_all_listings(item_id: Optional[str], page: int, page_size: int) ->
         data_filter['item_id'] = item_id
 
     sort_filter = {'updated_at': -1}
-    return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter=data_filter, sort=sort_filter, page=page, page_size=page_size, sort={'created_at': -1})
+    return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter=data_filter, sort=sort_filter, page=page, page_size=page_size)
 
 
 async def get_listing_by_id(listing_id: str) -> dict[str, Any]:
