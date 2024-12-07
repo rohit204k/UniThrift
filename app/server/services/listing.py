@@ -62,7 +62,7 @@ async def get_all_listings(item_id: Optional[str], page: int, page_size: int) ->
     if item_id:
         data_filter['item_id'] = item_id
 
-    return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter=data_filter, page=page, page_size=page_size)
+    return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter=data_filter, page=page, page_size=page_size, sort={'created_at': -1})
 
 
 async def get_listing_by_id(listing_id: str) -> dict[str, Any]:
@@ -92,7 +92,9 @@ async def get_listings_by_user(user_data: dict[str, Any], page: int, page_size: 
     Returns:
         dict[str, Any]: _description_
     """
-    return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter={'seller_id': user_data['user_id'], 'is_deleted': False}, page=page, page_size=page_size)
+    return await core_service.read_many(
+        collection_name=Collections.LISTINGS, data_filter={'seller_id': user_data['user_id'], 'is_deleted': False}, page=page, page_size=page_size, sort={'created_at': -1}
+    )
 
 
 async def update_listing(listing_id: str, params: ListingUpdateRequest, user_data: dict[str, Any]) -> dict[str, Any]:
