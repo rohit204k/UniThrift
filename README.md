@@ -94,14 +94,14 @@ Empowering admins to monitor and manage platform activity effectively.
 ### 3. **Environment variables and MongoDB Setup**
 Create a new .env file in the root directory and add the following environment variables:
     ```bash
-MONGO_URI= # MongoDB connection string
-AWS_REGION= # AWS region
-AWS_ACCESS_ID= # AWS access key
-AWS_SECRET_KEY= # AWS secret key
-AWS_STORAGE_BUCKET= # AWS S3 bucket name
-AUTH_SERVICE_BASE_URL=https://127.0.0.1:8000/api/v1
-SENDGRID_API_KEY= # Sendgrid API key
-EMAIL_SENDER= # Sender email address
+    MONGO_URI= # MongoDB connection string
+    AWS_REGION= # AWS region
+    AWS_ACCESS_ID= # AWS access key
+    AWS_SECRET_KEY= # AWS secret key
+    AWS_STORAGE_BUCKET= # AWS S3 bucket name
+    AUTH_SERVICE_BASE_URL=https://127.0.0.1:8000/api/v1
+    SENDGRID_API_KEY= # Sendgrid API key
+    EMAIL_SENDER= # Sender email address
     ```
 
 ### 4. **Run the Application**
