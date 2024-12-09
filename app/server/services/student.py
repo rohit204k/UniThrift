@@ -164,7 +164,6 @@ async def send_otp(params: OtpRequest):
     otp_data = OtpCreateDB(**otp_data)
     otp_data = otp_data.dict(exclude_none=True)
     await core_service.update_one(Collections.OTP, data_filter={'user_id': existing_user['_id']}, update={'$set': otp_data}, upsert=True)
-
     # send email with default password and unique id
     if params.verification_type == VerificationType.AUTHENTICATION:
         template_path = constants.VERIFICATION_TEMPLATE_PATH
@@ -173,7 +172,7 @@ async def send_otp(params: OtpRequest):
         template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
         email_header = constants.FORGOT_PASSWORD_MAIL_HEADER
 
-    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp, company_name=constants.UNITHRIFT)
+    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp)
 
     await email_service.send_email([params.email], email_header, template, is_html=True)
 
@@ -197,7 +196,7 @@ async def verify_otp(params: VerifyOtpRequest):
     """
     user_data = params.dict()
 
-    existing_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email})
+    existing_user = await core_service.read_one(Collections.USERS, data_filter={'email': params.email, 'is_deleted': False})
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
@@ -218,7 +217,11 @@ async def verify_otp(params: VerifyOtpRequest):
         password_data = {'user_id': existing_user['_id'], 'password': encrypted_password}
         password_data = PasswordCreateDB(**password_data)
         password_data = password_data.dict(exclude_none=True)
-        await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': password_data['user_id']}, update={'$set': password_data}, upsert=True)
+        async with await core_service.get_session() as session:
+            async with session.start_transaction():
+                await core_service.update_one(Collections.PASSWORD, data_filter={'user_id': password_data['user_id']}, update={'$set': password_data}, upsert=True)
+
+                await core_service.update_one(Collections.OTP, data_filter={'user_id': existing_user['_id']}, update={'$set': {'is_used': True}}, upsert=True, session=session)
 
         # return {'message': 'Password updated successfully'}
 
@@ -249,7 +252,7 @@ async def get_students(page: int, page_size: int, search_query: Optional[str]) -
     """
     aggregate_query: list[dict[str, Any]] = [{'$match': {'name': {'$regex': search_query, '$options': 'i'}}}, {'$sort': {'name': 1}}] if search_query else [{'$sort': {'name': 1}}]
 
-    return await core_service.query_read(collection_name=Collections.USERS, aggregate=aggregate_query, page=page, page_size=page_size, paging_data=True)
+    return await core_service.query_read(Collections.USERS, aggregate=aggregate_query, page=page, page_size=page_size, paging_data=True)
 
 
 async def get_student(user_data: dict[str, Any]) -> dict[str, Any]:
@@ -261,7 +264,7 @@ async def get_student(user_data: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary object with student details
     """
-    user_data = await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
+    user_data = await core_service.read_one(Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
     if not user_data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
@@ -282,8 +285,7 @@ async def student_update(params: UserUpdateRequest, user_data: dict[str, Any]) -
         dict[str, Any]: A dictionary object with success message.
     """
     params = params.dict()
-
-    existing_user = await core_service.read_one(Collections.USERS, data_filter={'_id': user_data.get('user_id')})
+    existing_user = await core_service.read_one(Collections.USERS, data_filter={'_id': user_data.get('user_id'), 'is_deleted': False})
     if not existing_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 

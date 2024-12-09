@@ -35,7 +35,7 @@ async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
     if existing_email:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_EMAIL_EXISTS)
 
-    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'email': params.university_id, 'is_deleted': False})
+    existing_university_id = await core_service.read_one(Collections.USERS, data_filter={'university_id': params.university_id, 'is_deleted': False})
     if existing_university_id:
         raise HTTPException(status.HTTP_409_CONFLICT, localization.EXCEPTION_UNIVERSITY_ID_EXISTS)
 
@@ -173,7 +173,7 @@ async def send_otp(params: OtpRequest):
         template_path = constants.FORGOT_PASSWORD_TEMPLATE_PATH
         email_header = constants.FORGOT_PASSWORD_MAIL_HEADER
 
-    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp, company_name=constants.UNITHRIFT)
+    template = await template_util.get_template(template_path, user_name=f'{existing_user["first_name"]} {existing_user["last_name"]}', otp=otp)
 
     await email_service.send_email([params.email], email_header, template, is_html=True)
 

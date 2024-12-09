@@ -113,7 +113,7 @@ async def update_listing(listing_id: str, params: ListingUpdateRequest, user_dat
     Returns:
         dict[str, Any]: Success message
     """
-    listing_data = await core_service.read_one(collection_name=Collections.LISTINGS, data_filter={'_id': listing_id, 'seller_id': user_data['user_id'], 'is_deleted': False})
+    listing_data = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': listing_id, 'seller_id': user_data['user_id'], 'is_deleted': False})
     if not listing_data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_LISTING_NOT_FOUND)
 
@@ -142,9 +142,9 @@ async def delete_listing(listing_id: str, user_data: dict[str, Any]) -> dict[str
         dict[str, Any]: Success message
     """
     if user_data['user_type'] == Role.STUDENT:
-        listing_data = await core_service.read_one(collection_name=Collections.LISTINGS, data_filter={'_id': listing_id, 'seller_id': user_data['user_id'], 'is_deleted': False})
+        listing_data = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': listing_id, 'seller_id': user_data['user_id'], 'is_deleted': False})
     else:
-        listing_data = await core_service.read_one(collection_name=Collections.LISTINGS, data_filter={'_id': listing_id, 'is_deleted': False})
+        listing_data = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': listing_id, 'is_deleted': False})
 
     if not listing_data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_LISTING_NOT_FOUND)
