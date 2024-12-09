@@ -42,8 +42,8 @@ async def create_user(params: AdminUserCreateRequest) -> dict[str, Any]:
     user_data['user_type'] = Role.ADMIN
     user_data['is_verified'] = False
     password = user_data.pop('password')
-    encrypted_password = crypto_utils.sha1(password)
-    encrypted_password = crypto_utils.sha256(encrypted_password)
+    # password = crypto_utils.sha1(password)
+    encrypted_password = crypto_utils.sha256(password)
     # Running transactions in mongo. Transactions require cluster setup.
     # If any db operation within the content of a transaction fails, the entire transaction is rolled back.
     async with await core_service.get_session() as session:
@@ -213,8 +213,8 @@ async def verify_otp(params: VerifyOtpRequest):
 
     if user_data['verification_type'] == VerificationType.FORGOT_PASSWORD:
         password = user_data['password']
-        encrypted_password = crypto_utils.sha1(password)
-        encrypted_password = crypto_utils.sha256(encrypted_password)
+        # password = crypto_utils.sha1(password)
+        encrypted_password = crypto_utils.sha256(password)
         password_data = {'user_id': existing_user['_id'], 'password': encrypted_password}
         password_data = PasswordCreateDB(**password_data)
         password_data = password_data.dict(exclude_none=True)

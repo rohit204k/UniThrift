@@ -22,7 +22,7 @@ def generate_random_otp(length):
 
 
 def check_password(password: Optional[str], password_hash: Optional[str]):
-    password = crypto_utils.sha1(password)
+    # password = crypto_utils.sha1(password)
     password_received = crypto_utils.sha256(password)
     if password_received != password_hash:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=localization.EXCEPTION_PASSWORD_INVALID)
