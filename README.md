@@ -91,27 +91,30 @@ Empowering admins to monitor and manage platform activity effectively.
 
 ### 3. **Environment variables and MongoDB Setup**
 Create a new .env file in the root directory and add the following environment variables:
-    ```bash
-    MONGO_URI=                # MongoDB connection string
-    AWS_REGION=               # AWS region
-    AWS_ACCESS_ID=            # AWS access key
-    AWS_SECRET_KEY=           # AWS secret key
-    AWS_STORAGE_BUCKET=       # AWS S3 bucket name
-    AUTH_SERVICE_BASE_URL=https://127.0.0.1:8000/api/v1
-    SENDGRID_API_KEY=         # Sendgrid API key
-    EMAIL_SENDER=             # Sender email address
-    ```
+```bash
+MONGO_URI=                # MongoDB connection string
+AWS_REGION=               # AWS region
+AWS_ACCESS_ID=            # AWS access key
+AWS_SECRET_KEY=           # AWS secret key
+AWS_STORAGE_BUCKET=       # AWS S3 bucket name
+AUTH_SERVICE_BASE_URL=https://127.0.0.1:8000/api/v1
+SENDGRID_API_KEY=         # Sendgrid API key
+EMAIL_SENDER=             # Sender email address
+```
 
 ### 4. **Run the Application**
 - **Development Server**: Run the FastAPI development server using the following command:
-  ```bash
-  uvicorn app.main:app --reload
-  ```
+```bash
+uvicorn app.main:app --reload
+```
 
 ### 5. Testing the Application
 - **Swagger UI**: Access the Swagger UI at `http://localhost:8000/docs` to test the API endpoints.
 - **Postman**: Access the API endpoints by using above local URL or the deployed URL at `http://18.117.164.164:4001/docs#/`
-
+- **Pytest**: Unit test for each module have been developed using `pytest` library. These can be run by simply running the following command in the app directory.
+```bash
+pytest
+```
 
 ## Dataset
 UniThrift utilizes a **master table(universities)** containing information for all participating universities. This dataset is used in creation of new user including Student and Admin. No additional external or third-party master datasets are used.

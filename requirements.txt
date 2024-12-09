@@ -16,6 +16,9 @@ orjson==3.9.9
 pandas==2.1.1
 pip-licenses==4.3.3
 pybars3==0.9.7
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-mock==3.14.0
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.6
 sendgrid==6.10.0
