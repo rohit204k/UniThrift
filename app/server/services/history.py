@@ -41,14 +41,14 @@ async def get_listing_details(listing_id: str, user_data: dict[str, Any]) -> dic
     Returns:
         dict[str, Any]: _description_
     """
-    listing_details = await core_service.read_one(collection_name=Collections.LISTINGS, data_filter={'_id': listing_id, 'status': ListingStatus.SOLD})
+    listing_details = await core_service.read_one(Collections.LISTINGS, data_filter={'_id': listing_id, 'status': ListingStatus.SOLD})
     if not listing_details:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_LISTING_NOT_FOUND)
     if user_data['user_id'] != listing_details['seller_id'] and user_data['user_id'] != listing_details['buyer_id']:
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_FORBIDDEN_ACCESS)
-    seller_data = await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': listing_details['seller_id']})
-    buyer_data = await core_service.read_one(collection_name=Collections.USERS, data_filter={'_id': listing_details['buyer_id']})
-    transaction_data = await core_service.read_one(collection_name=Collections.TRANSACTIONS, data_filter={'listing_id': listing_id, 'buyer_id': listing_details['buyer_id']})
+    seller_data = await core_service.read_one(Collections.USERS, data_filter={'_id': listing_details['seller_id']})
+    buyer_data = await core_service.read_one(Collections.USERS, data_filter={'_id': listing_details['buyer_id']})
+    transaction_data = await core_service.read_one(Collections.TRANSACTIONS, data_filter={'listing_id': listing_id, 'buyer_id': listing_details['buyer_id']})
     if not seller_data or not buyer_data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
 
