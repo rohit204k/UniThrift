@@ -51,15 +51,12 @@ async def get_listing_details(listing_id: str, user_data: dict[str, Any]) -> dic
     transaction_data = await core_service.read_one(collection_name=Collections.TRANSACTIONS, data_filter={'listing_id': listing_id, 'buyer_id': listing_details['buyer_id']})
     if not seller_data or not buyer_data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_USER_NOT_FOUND)
-
     seller_first_name = seller_data.get('first_name', '').strip() or 'N/A'
     seller_last_name = seller_data.get('last_name', '').strip() or 'N/A'
     buyer_first_name = buyer_data.get('first_name', '').strip() or 'N/A'
     buyer_last_name = buyer_data.get('last_name', '').strip() or 'N/A'
     buyer_comments = transaction_data.get('comments', '').strip() or 'No comments provided'
-
     listing_details['seller_name'] = f'{seller_first_name} {seller_last_name}'
     listing_details['buyer_name'] = f'{buyer_first_name} {buyer_last_name}'
     listing_details['buyer_comments'] = buyer_comments
-
     return listing_details

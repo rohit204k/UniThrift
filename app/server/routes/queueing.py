@@ -34,7 +34,7 @@ async def share_contact(params: ApproveInterestRequest, user_data=Depends(JWTAut
     return {'data': data, 'status': 'SUCCESS'}
 
 
-@router.delete('/queueing/reject_interest', summary='Reject a buyer' 's interest in the listing')
+@router.post('/queueing/reject_interest', summary='Reject a buyer' 's interest in the listing')
 async def reject_interest(params: MarkSaleCompleteRequest, user_data=Depends(JWTAuthUser([Role.STUDENT]))) -> dict[str, Any]:
     data = await queueing.reject_interest(params, user_data)
     return {'data': data, 'status': 'SUCCESS'}
