@@ -17,6 +17,9 @@ By focusing on a **secure**, **user-friendly**, and **sustainable** shopping exp
   - EC2 for backend hosting
   - S3 for static files and media storage
 
+### Containerization
+- **Docker**: The application can be containerized for ease of deployment using Docker.
+
 ### API Testing
 - **Swagger UI**: Integrated for live API documentation and testing.
 - **Postman**: Supported for advanced API testing.
@@ -72,6 +75,7 @@ Empowering admins to monitor and manage platform activity effectively.
 - Python 3.8 or higher
 - MongoDB installed locally or a MongoDB Atlas connection string.
 - AWS account (for EC2 and S3 integration)
+- Docker installed (if using containerization)
 
 
 ## Configuration
@@ -108,7 +112,80 @@ EMAIL_SENDER=             # Sender email address
 uvicorn app.main:app --reload
 ```
 
-### 5. Testing the Application
+### 5. **Containerization with Docker**
+- UniThrift can be containerized for simplified deployment. Below are the details of the required Docker files.
+- Dockerfile
+```bash
+# Use a smaller base image
+FROM python:3.10-slim AS builder
+
+WORKDIR /code
+
+# Don't write bytecode to disk to prevent `.pyc` files
+ENV PYTHONDONTWRITEBYTECODE 1
+
+# Don't store pip cache
+ENV PIP_NO_CACHE_DIR=off
+
+# Install gcc and other dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends gcc
+
+COPY ./requirements.txt /code/requirements.txt
+
+# Install requirements and remove unnecessary files
+RUN pip install --no-cache-dir -r /code/requirements.txt
+
+# Multi-stage build
+FROM python:3.10-slim
+
+WORKDIR /code
+
+# Copy the entire Python install directory from the previous stage
+COPY --from=builder /usr/local /usr/local
+
+COPY ./app /code/app
+
+CMD ["uvicorn", "app.main:app", "--proxy-headers", "--host", "0.0.0.0", "--workers", "1", "--timeout-keep-alive", "5", "--timeout-graceful-shutdown", "15", "--port", "4000"]
+# Other settings
+# "--limit-max-requests", "1000"
+# Alternate way to use dynamic port from environment variable
+# CMD uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port $PORT
+```
+
+- docker-compose.yml
+```bash
+version: '3.4'
+
+services:
+  fastapi_backend:
+    image: fastapi_backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ../docker_container_logs:/code/logs
+    ports:
+      - 4001:4000
+
+    env_file: .env
+    logging:
+      driver: local
+      options:
+        mode: "non-blocking"
+        max-buffer-size: "2m"
+        max-size: "10m"
+        max-file: "3"
+
+    restart: always
+```
+- **Running the Application with Docker**
+  - Build and run the application:
+```bash
+docker-compose up --build
+```
+  - Access the application from Swagger UI: http://localhost:8000/docs
+
+### 6. Testing the Application
 - **Swagger UI**: Access the Swagger UI at `http://localhost:8000/docs` to test the API endpoints.
 - **Postman**: Access the API endpoints by using above local URL or the deployed URL at `http://18.117.164.164:4001/docs#/`
 - **Pytest**: Unit test for each module have been developed using `pytest` library. These can be run by simply running the following command in the app directory.
