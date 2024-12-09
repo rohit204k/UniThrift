@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI, status
@@ -121,7 +121,7 @@ async def test_admin_create_duplicate_id_error(mock_read_one):
 @pytest.mark.asyncio
 @patch('app.server.services.admin.core_service.read_one', new_callable=AsyncMock)
 @patch('app.server.services.admin.create_login_token', new_callable=AsyncMock)
-@patch('app.server.services.admin.password_utils.check_password', new_callable=AsyncMock)
+@patch('app.server.services.admin.password_utils.check_password', new_callable=Mock)
 @patch('app.server.services.admin.core_service.update_one', new_callable=AsyncMock)
 async def test_admin_login(mock_update_one, mock_check_password, mock_create_login_token, mock_read_one):
     mock_read_one.side_effect = [{'_id': 'user123', 'is_verified': True, 'user_type': Role.ADMIN}, {'_id': 'id123', 'user_id': 'user123', 'password': 'hashed_password'}]
