@@ -32,10 +32,8 @@ async def mark_interested(params: MarkInterestedRequest, user_data: dict[str, an
     is_item_sold = await core_service.read_one(Collections.LISTINGS, data_filter={'listing_id': params.listing_id, 'status': ListingStatus.SOLD})
     if is_item_sold:
         raise HTTPException(status.HTTP_403_FORBIDDEN, localization.EXCEPTION_ITEM_SOLD)
-
     interaction_data['status'] = SaleStatus.INTERESTED
     interaction_data['buyer_id'] = user_data.get('user_id')
-
     interaction_data = TransactionCreateDB(**interaction_data).dict(exclude_none=True)
     await core_service.create_one(Collections.TRANSACTIONS, data=interaction_data)
     return {'message': 'Seller has been notified about your interest in the item'}
