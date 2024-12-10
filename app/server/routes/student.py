@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends
 
@@ -55,6 +55,6 @@ async def get_student(user_data=Depends(JWTAuthUser([Role.STUDENT]))) -> dict[st
 
 
 @router.get('/student/get_all_students', summary='Gets all users in paginated form')
-async def get_all_students(page: int = 1, page_size: int = 10, search_query: Optional[str] = None) -> dict[str, Any]:
-    data = await student.get_students(page=page, page_size=page_size, search_query=search_query)
+async def get_all_students(page: int = 1, page_size: int = 10, _token=Depends(JWTAuthUser([Role.ADMIN]))) -> dict[str, Any]:
+    data = await student.get_students(page=page, page_size=page_size)
     return {'data': data, 'status': 'SUCCESS'}

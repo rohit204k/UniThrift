@@ -1,6 +1,6 @@
 import asyncio
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import HTTPException, status
 
@@ -235,7 +235,7 @@ async def verify_otp(params: VerifyOtpRequest):
     return {'message': 'User verified successfully'}
 
 
-async def get_students(page: int, page_size: int, search_query: Optional[str]) -> list[dict[str, Any]]:
+async def get_students(page: int, page_size: int) -> list[dict[str, Any]]:
     """
     Get a paginated list of students.
 
@@ -250,7 +250,7 @@ async def get_students(page: int, page_size: int, search_query: Optional[str]) -
     Raises:
         None
     """
-    aggregate_query: list[dict[str, Any]] = [{'$match': {'name': {'$regex': search_query, '$options': 'i'}}}, {'$sort': {'name': 1}}] if search_query else [{'$sort': {'name': 1}}]
+    aggregate_query: list[dict[str, Any]] = [{'$match': {'user_type': Role.STUDENT}}]
 
     return await core_service.query_read(Collections.USERS, aggregate=aggregate_query, page=page, page_size=page_size, paging_data=True)
 
