@@ -60,7 +60,11 @@ async def get_all_listings(item_id: Optional[str], page: int, page_size: int) ->
     # data_filter = {{"status": {"$in": [ListingStatus.ON_HOLD, ListingStatus.NEW]}}, 'is_deleted': False}
     data_filter = {'$and': [{'status': {'$in': [ListingStatus.ON_HOLD, ListingStatus.NEW]}}, {'status': {'$ne': ListingStatus.SOLD}}], 'is_deleted': False}
     if item_id:
-        data_filter['item_id'] = item_id
+        item_details = await core_service.read_one(Collections.ITEMS, data_filter={'_id': item_id, 'is_deleted': False})
+        if not item_details:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, localization.EXCEPTION_ITEM_NOT_FOUND)
+
+        data_filter['item_name'] = item_details['item_name']
 
     sort_filter = {'updated_at': -1}
     return await core_service.read_many(collection_name=Collections.LISTINGS, data_filter=data_filter, sort=sort_filter, page=page, page_size=page_size)
